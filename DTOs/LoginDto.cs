@@ -4,6 +4,6 @@
     {
         public string Email { get; set; } = string.Empty;// User's email address
 
-        public string Password { get; set; } = string.Empty;// User's password
+        public string Password { get; set; } = string.Empty;// User password
     }
 }
