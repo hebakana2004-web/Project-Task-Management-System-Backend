@@ -7,6 +7,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Serilog;// We use it to log information, warnings, and errors,We use it to record events.
 
+using Microsoft.OpenApi.Models;
+
+
+// Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.File(
         "Logs/log-.txt",
@@ -17,6 +21,7 @@ var builder = WebApplication.CreateBuilder(args);// Creates a new instance of th
 // Allow Angular frontend to access the API
 builder.Host.UseSerilog();// Configures the application to use Serilog for logging. It replaces the default logging provider with Serilog, which allows for more advanced logging capabilities, such as structured logging and writing logs to various sinks (e.g., files, databases, etc.).
 
+// CORS Configuration
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AngularPolicy",
@@ -32,10 +37,48 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
+// Swagger Configuration
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "LoginPage API",
+        Version = "v1"
+    });
+
+    // Add JWT authentication to Swagger
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your JWT token}"
+    });
+
+    // Add a security requirement to indicate that the API requires authentication
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+// Add Entity Framework Core
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));// Configures the application to use SQL Server with the connection string specified in the configuration (e.g., appsettings.json) under "DefaultConnection". This allows the application to connect to the database and perform CRUD operations on the defined models (TaskItem, Comment, Project, User) through Entity Framework Core.
+
+// JWT Authentication Configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -53,7 +96,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
     });
-builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Dependency Injection for Services
+builder.Services.AddScoped<IAuthService, AuthService>();// Registers the AuthService class as the implementation of the IAuthService interface in the dependency injection container. This allows the application to inject an instance of AuthService wherever IAuthService is required, promoting loose coupling and easier testing.
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 

@@ -28,6 +28,8 @@ namespace ProjectTaskManagementAPI.Services
         }
         //Constructor Injection
         //When .NET creates: AuthService It automatically sends: AppDbContext ILogger IConfiguration to the Constructor.
+
+        //hash password
         private string HashPassword(string password)//The HashPassword method takes a plain text password as input and returns a hashed version of it. It uses the SHA256 hashing algorithm to compute the hash of the password and then converts it to a Base64 string for storage.
         {
             using var sha256 = SHA256.Create();//We create an instance of the SHA256 hashing algorithm using the Create method. This allows us to compute the hash of the password.
@@ -38,7 +40,9 @@ namespace ProjectTaskManagementAPI.Services
 
             return Convert.ToBase64String(hash);
         }
-        private string GenerateJwtToken(User user)//JWT
+
+        //generate jwt token method
+        private string GenerateJwtToken(User user)
         {
             var claims = new[]
             {
@@ -61,12 +65,14 @@ namespace ProjectTaskManagementAPI.Services
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddSeconds(5),
+                expires: DateTime.Now.AddHours(1),
                 signingCredentials: credentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        //register method
         public async Task<string> RegisterAsync(RegisterDto dto)
         {
             var existingUser = await _context.Users
@@ -96,7 +102,10 @@ namespace ProjectTaskManagementAPI.Services
             return "User registered successfully";
         }
         //The LoginAsync method is responsible for authenticating a user based on the provided email and password. It first checks if a user with the given email exists in the database. If not, it logs a warning and returns an error message. If the user exists, it hashes the provided password and compares it with the stored password hash. If they do not match, it logs a warning and returns an error message. If the login is successful, it logs the information and returns a success message.
-        public async Task<string> LoginAsync(LoginDto dto)
+
+
+        //login method
+        public async Task<string> LoginAsync(LoginDto dto)//The LoginAsync method is responsible for authenticating a user based on the provided email and password. It first checks if a user with the given email exists in the database. If not, it logs a warning and returns an error message. If the user exists, it hashes the provided password and compares it with the stored password hash. If they do not match, it logs a warning and returns an error message. If the login is successful, it logs the information and returns a success message.
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);//We query the database to find a user with the provided email. If no user is found, we log a warning and return an error message indicating that the email or password is invalid.

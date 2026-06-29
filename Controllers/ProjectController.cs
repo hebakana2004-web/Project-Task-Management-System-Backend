@@ -20,6 +20,8 @@ namespace ProjectTaskManagementAPI.Controllers
             _projectService = projectService;
             _logger = logger;
         }
+
+        // GET: api/project
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAllProjects()
@@ -41,6 +43,8 @@ namespace ProjectTaskManagementAPI.Controllers
                 });
             }
         }
+
+        // GET: api/project/{id}
         [HttpGet("{id}")]
         [Authorize]
         public async Task<IActionResult> GetProjectById(int id)
@@ -71,6 +75,8 @@ namespace ProjectTaskManagementAPI.Controllers
                 });
             }
         }
+
+        // POST: api/project
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> CreateProject(ProjectDto dto)
@@ -96,6 +102,8 @@ namespace ProjectTaskManagementAPI.Controllers
                 });
             }
         }
+
+        // PUT: api/project/{id}
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> UpdateProject(int id, ProjectDto dto)
@@ -131,6 +139,7 @@ namespace ProjectTaskManagementAPI.Controllers
             }
         }
 
+        // DELETE: api/project/{id}
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteProject(int id)

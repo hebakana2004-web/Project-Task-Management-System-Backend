@@ -24,6 +24,7 @@ namespace ProjectTaskManagementAPI.Controllers // define the namespace for contr
         { // start Register
             try // begin try block to catch unexpected errors and log them
             { // start try
+                _logger.LogInformation("Registering user with email: {Email}", dto.Email); // log the registration attempt with email
                 var result = await _authService.RegisterAsync(dto); // call service to register and await result (string message or token)
 
                 if (result == "Email already exists") // service returned a known failure message
@@ -58,10 +59,12 @@ namespace ProjectTaskManagementAPI.Controllers // define the namespace for contr
         { // start Login
             try // begin try block to catch errors during login
             { // start try
+                _logger.LogInformation("Attempting login for user with email: {Email}", dto.Email); // log the login attempt with email
                 var token = await _authService.LoginAsync(dto); // call service to login and await returned token or error message
 
                 if (token == "Invalid Email or Password") // service returned a known failure indication
                 { // start if
+                    _logger.LogWarning("Login failed for email: {Email}. Reason: {Reason}", dto.Email, token); // log the failed login attempt with reason
                     return Unauthorized(new // return 401 Unauthorized with a small payload
                     {
                         Success = false, // operation failed
@@ -71,6 +74,7 @@ namespace ProjectTaskManagementAPI.Controllers // define the namespace for contr
 
                 return Ok(new // on success return 200 Ok with the token
                 {
+                    
                     Success = true, // indicate success
                     Token = token // include JWT or token string returned by service
                 });

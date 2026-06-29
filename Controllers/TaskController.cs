@@ -21,6 +21,8 @@ namespace ProjectTaskManagementAPI.Controllers
             _logger = logger;
         }
 
+
+        // GET: api/task
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAllTasks()
@@ -37,6 +39,8 @@ namespace ProjectTaskManagementAPI.Controllers
             }
         }
 
+
+        // GET: api/task/{id}
         [HttpGet("{id}")]
         [Authorize]
         public async Task<IActionResult> GetTaskById(int id)
@@ -57,6 +61,8 @@ namespace ProjectTaskManagementAPI.Controllers
             }
         }
 
+
+        // POST: api/task
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateTask(TaskDto dto)
@@ -77,6 +83,7 @@ namespace ProjectTaskManagementAPI.Controllers
             }
         }
 
+        // PUT: api/task/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateTask(int id, TaskDto dto)
@@ -100,8 +107,9 @@ namespace ProjectTaskManagementAPI.Controllers
             }
         }
 
+        // PATCH: api/task/{id}/status
         [HttpPatch("{id}/status")]
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User")] // Allow only users to update task status
         public async Task<IActionResult> UpdateTaskStatus(int id, [FromBody] string status)
         {
             try
@@ -120,6 +128,7 @@ namespace ProjectTaskManagementAPI.Controllers
             }
         }
 
+        // DELETE: api/task/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteTask(int id)

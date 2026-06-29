@@ -19,6 +19,8 @@ namespace ProjectTaskManagementAPI.Services
             _logger = logger;
         }
 
+
+        // Get all tasks
         public async Task<List<TaskItem>> GetAllTasksAsync()
         {
             try
@@ -38,6 +40,8 @@ namespace ProjectTaskManagementAPI.Services
                 throw;
             }
         }
+
+        // Get task by id
         public async Task<TaskItem?> GetTaskByIdAsync(int id)
         {
             try
@@ -64,6 +68,7 @@ namespace ProjectTaskManagementAPI.Services
             }
         }
 
+        // Create a new task
         public async Task<string> CreateTaskAsync(TaskDto dto)
         {
             try
@@ -111,6 +116,7 @@ namespace ProjectTaskManagementAPI.Services
             }
         }
 
+        // Update an existing task
         public async Task<string> UpdateTaskAsync(int id, TaskDto dto)
         {
             try
@@ -158,6 +164,8 @@ namespace ProjectTaskManagementAPI.Services
                 throw;
             }
         }
+
+        // Update task status
         public async Task<string> UpdateTaskStatusAsync(int id, string status)
         {
             var task = await _context.TaskItems.FindAsync(id);
@@ -172,6 +180,7 @@ namespace ProjectTaskManagementAPI.Services
             return "Task status updated successfully";
         }
 
+        // Delete a task
         public async Task<string> DeleteTaskAsync(int id)
         {
             try

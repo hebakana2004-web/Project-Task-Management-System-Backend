@@ -19,7 +19,8 @@ namespace ProjectTaskManagementAPI.Services
             _logger = logger;
         }
 
-  
+
+        // Get all projects
         public async Task<List<Project>> GetAllProjectsAsync()
         {
             try
@@ -37,6 +38,8 @@ namespace ProjectTaskManagementAPI.Services
                 throw;
             }
         }
+
+        // Get project by id
         public async Task<Project?> GetProjectByIdAsync(int id)
         {
             try
@@ -61,6 +64,7 @@ namespace ProjectTaskManagementAPI.Services
             }
         }
 
+        // Create a new project
         public async Task<string> CreateProjectAsync(ProjectDto dto)
         {
             try
@@ -88,6 +92,7 @@ namespace ProjectTaskManagementAPI.Services
             }
         }
 
+        // Update an existing project
         public async Task<string> UpdateProjectAsync(int id, ProjectDto dto)
         {
             try
@@ -117,6 +122,7 @@ namespace ProjectTaskManagementAPI.Services
             }
         }
 
+        // Delete a project
         public async Task<string> DeleteProjectAsync(int id)
         {
             try
