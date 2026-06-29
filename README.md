@@ -21,6 +21,7 @@ Backend
 •	JWT Authentication & Authorization
 Database
 •	Microsoft SQL Server
+I used Entity Framework Core Migrations to create and manage the database schema. I created the initial migration using Add-Migration InitialCreate and applied it to SQL Server using Update-Database. This automatically created the database tables based on my entity models.
 
 
 
