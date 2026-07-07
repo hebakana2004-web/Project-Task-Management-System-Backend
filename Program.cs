@@ -10,6 +10,8 @@ using Serilog;// We use it to log information, warnings, and errors,We use it to
 using Microsoft.OpenApi.Models;
 
 
+
+
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.File(
@@ -35,7 +37,19 @@ builder.Services.AddCors(options =>
 
 // Add services to the container.
 
+
+// Add services to the container
 builder.Services.AddControllers();
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.InstanceName = "ProjectTaskManagement";
+});
+
+builder.Services.AddEndpointsApiExplorer(); ;// Configures the application to use Redis for caching. It retrieves the Redis connection string from the configuration (e.g., appsettings.json) under "Redis:ConnectionString". This allows the application to store and retrieve cached data from a Redis server, improving performance and reducing database load.
+
+
 builder.Services.AddEndpointsApiExplorer();
 
 // Swagger Configuration
@@ -102,14 +116,12 @@ builder.Services.AddScoped<IAuthService, AuthService>();// Registers the AuthSer
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 
+
 var app = builder.Build();// Builds the application, which will be used to configure the HTTP request pipeline and run the application.
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("AngularPolicy");// Enables CORS for the specified policy
@@ -117,5 +129,26 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    var retries = 10;
+
+    while (retries > 0)
+    {
+        try
+        {
+            db.Database.Migrate();
+            break;
+        }
+        catch
+        {
+            retries--;
+            Thread.Sleep(5000);
+        }
+    }
+}
 
 app.Run();

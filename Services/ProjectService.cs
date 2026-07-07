@@ -3,6 +3,8 @@ using ProjectTaskManagementAPI.Data;
 using ProjectTaskManagementAPI.DTOs;
 using ProjectTaskManagementAPI.Interfaces;
 using ProjectTaskManagementAPI.Models;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace ProjectTaskManagementAPI.Services
 {
@@ -10,24 +12,51 @@ namespace ProjectTaskManagementAPI.Services
     {
         private readonly AppDbContext _context;
         private readonly ILogger<ProjectService> _logger;
+        private readonly IDistributedCache _cache;
 
         public ProjectService(
             AppDbContext context,
-            ILogger<ProjectService> logger)
+            ILogger<ProjectService> logger,
+            IDistributedCache cache)
         {
             _context = context;
             _logger = logger;
+            _cache = cache;
         }
 
 
         // Get all projects
         public async Task<List<Project>> GetAllProjectsAsync()
         {
+            const string cacheKey = "all_projects";
+
             try
             {
+                // Check if data exists in Redis
+                var cachedProjects = await _cache.GetStringAsync(cacheKey);
+
+                if (!string.IsNullOrEmpty(cachedProjects))
+                {
+                    _logger.LogInformation("Projects retrieved from Redis cache");
+
+                    return JsonSerializer.Deserialize<List<Project>>(cachedProjects)!;
+                }
+
+                // Retrieve from SQL Server
                 var projects = await _context.Projects.ToListAsync();
 
-                _logger.LogInformation("Projects retrieved successfully");
+                // Store in Redis for 5 minutes
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                };
+
+                await _cache.SetStringAsync(
+                    cacheKey,
+                    JsonSerializer.Serialize(projects),
+                    options);
+
+                _logger.LogInformation("Projects retrieved from database and stored in Redis");
 
                 return projects;
             }
@@ -79,6 +108,7 @@ namespace ProjectTaskManagementAPI.Services
                 await _context.Projects.AddAsync(project);
 
                 await _context.SaveChangesAsync();
+                await _cache.RemoveAsync("all_projects");
 
                 _logger.LogInformation("Project created successfully");
 
@@ -110,6 +140,7 @@ namespace ProjectTaskManagementAPI.Services
                 project.Description = dto.Description;
 
                 await _context.SaveChangesAsync();
+                await _cache.RemoveAsync("all_projects");
 
                 _logger.LogInformation("Project updated successfully");
 
@@ -139,6 +170,9 @@ namespace ProjectTaskManagementAPI.Services
                 _context.Projects.Remove(project);
 
                 await _context.SaveChangesAsync();
+
+                
+                await _cache.RemoveAsync("all_projects");
 
                 _logger.LogInformation("Project deleted successfully");
 
