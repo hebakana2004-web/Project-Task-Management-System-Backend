@@ -86,6 +86,7 @@ namespace ProjectTaskManagementAPI.Controllers
         // PUT: api/task/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
+        
         public async Task<IActionResult> UpdateTask(int id, TaskDto dto)
         {
             try

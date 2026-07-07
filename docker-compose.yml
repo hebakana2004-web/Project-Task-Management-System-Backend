@@ -29,3 +29,13 @@
       ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=ProjectTaskManagementDB;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;"
       Redis__ConnectionString: "redis:6379"
+
+  angular:
+    build:
+      context: C:/Users/Lenovo/Desktop/project-task-management-ui
+      dockerfile: Dockerfile
+    container_name: project-task-ui
+    ports:
+      - "4200:80"
+    depends_on:
+      - api

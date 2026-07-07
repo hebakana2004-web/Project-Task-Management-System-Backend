@@ -24,6 +24,7 @@ namespace ProjectTaskManagementAPI.Controllers
         // GET: api/project
         [HttpGet]
         [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllProjects()
         {
             try
@@ -47,6 +48,7 @@ namespace ProjectTaskManagementAPI.Controllers
         // GET: api/project/{id}
         [HttpGet("{id}")]
         [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetProjectById(int id)
         {
             try
@@ -79,6 +81,7 @@ namespace ProjectTaskManagementAPI.Controllers
         // POST: api/project
         [HttpPost]
         [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateProject(ProjectDto dto)
         {
             try
@@ -106,6 +109,7 @@ namespace ProjectTaskManagementAPI.Controllers
         // PUT: api/project/{id}
         [HttpPut("{id}")]
         [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateProject(int id, ProjectDto dto)
         {
             try
@@ -142,6 +146,7 @@ namespace ProjectTaskManagementAPI.Controllers
         // DELETE: api/project/{id}
         [HttpDelete("{id}")]
         [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProject(int id)
         {
             try
