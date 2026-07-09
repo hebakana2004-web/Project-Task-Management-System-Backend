@@ -23,8 +23,7 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // GET: api/project
         [HttpGet]
-        [Authorize]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]//Meaning: No one can enter this endpoint unless they have a valid JWT.
         public async Task<IActionResult> GetAllProjects()
         {
             try
@@ -47,8 +46,7 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // GET: api/project/{id}
         [HttpGet("{id}")]
-        [Authorize]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]//Meaning: No one can enter this endpoint unless they have a valid JWT.
         public async Task<IActionResult> GetProjectById(int id)
         {
             try
@@ -80,8 +78,7 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // POST: api/project
         [HttpPost]
-        [Authorize]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]//Meaning: No one can enter this endpoint unless they have a valid JWT.
         public async Task<IActionResult> CreateProject(ProjectDto dto)
         {
             try
@@ -108,8 +105,7 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // PUT: api/project/{id}
         [HttpPut("{id}")]
-        [Authorize]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]//Meaning: No one can enter this endpoint unless they have a valid JWT.
         public async Task<IActionResult> UpdateProject(int id, ProjectDto dto)
         {
             try
@@ -145,8 +141,7 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // DELETE: api/project/{id}
         [HttpDelete("{id}")]
-        [Authorize]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]//Meaning: No one can enter this endpoint unless they have a valid JWT.
         public async Task<IActionResult> DeleteProject(int id)
         {
             try
@@ -168,7 +163,7 @@ namespace ProjectTaskManagementAPI.Controllers
                     Message = result
                 });
             }
-            catch (Exception ex)
+            catch (Exception ex)//catch any unexpected exceptions during deletion
             {
                 _logger.LogError(ex, "Error while deleting project");
 

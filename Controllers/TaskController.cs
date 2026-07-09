@@ -7,12 +7,15 @@ namespace ProjectTaskManagementAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize]//Meaning: No one can enter this endpoint unless they have a valid JWT.
     public class TaskController : ControllerBase
     {
-        private readonly ITaskService _taskService;
-        private readonly ILogger<TaskController> _logger;
+        
+        private readonly ITaskService _taskService;// Dependency injection for the task service
+        private readonly ILogger<TaskController> _logger;// Dependency injection for logging
 
+
+        // Constructor for the TaskController
         public TaskController(
             ITaskService taskService,
             ILogger<TaskController> logger)
@@ -24,7 +27,7 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // GET: api/task
         [HttpGet]
-        [Authorize]
+        [Authorize]// Meaning: No one can enter this endpoint unless they have a valid JWT.
         public async Task<IActionResult> GetAllTasks()
         {
             try
@@ -42,7 +45,7 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // GET: api/task/{id}
         [HttpGet("{id}")]
-        [Authorize]
+        [Authorize]// Meaning: No one can enter this endpoint unless they have a valid JWT.
         public async Task<IActionResult> GetTaskById(int id)
         {
             try
@@ -64,7 +67,7 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // POST: api/task
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]// Meaning: No one can enter this endpoint unless they have a valid JWT.
         public async Task<IActionResult> CreateTask(TaskDto dto)
         {
             try
@@ -85,8 +88,8 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // PUT: api/task/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
-        
+        [Authorize(Roles = "Admin")]//Meaning: No one can enter this endpoint unless they have a valid JWT.
+
         public async Task<IActionResult> UpdateTask(int id, TaskDto dto)
         {
             try
@@ -131,7 +134,7 @@ namespace ProjectTaskManagementAPI.Controllers
 
         // DELETE: api/task/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]//Meaning: No one can enter this endpoint unless they have a valid JWT.
         public async Task<IActionResult> DeleteTask(int id)
         {
             try

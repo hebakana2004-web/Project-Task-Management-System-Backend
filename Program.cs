@@ -19,9 +19,13 @@ Log.Logger = new LoggerConfiguration()
         rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
+
+// Create a builder for the web application
 var builder = WebApplication.CreateBuilder(args);// Creates a new instance of the WebApplicationBuilder class, which is used to configure and build the web application. The args parameter represents command-line arguments passed to the application.
-// Allow Angular frontend to access the API
+
+// Configure Serilog
 builder.Host.UseSerilog();// Configures the application to use Serilog for logging. It replaces the default logging provider with Serilog, which allows for more advanced logging capabilities, such as structured logging and writing logs to various sinks (e.g., files, databases, etc.).
+
 
 // CORS Configuration
 builder.Services.AddCors(options =>
@@ -35,22 +39,24 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Add services to the container.
-
 
 // Add services to the container
 builder.Services.AddControllers();
 
+
+// Configure Redis Cache
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration["Redis:ConnectionString"];
     options.InstanceName = "ProjectTaskManagement";
 });
 
-builder.Services.AddEndpointsApiExplorer(); ;// Configures the application to use Redis for caching. It retrieves the Redis connection string from the configuration (e.g., appsettings.json) under "Redis:ConnectionString". This allows the application to store and retrieve cached data from a Redis server, improving performance and reducing database load.
 
-
+//It enables API endpoint discovery so that Swagger can automatically generate API documentation and list all available endpoints.
+//Because Swagger needs to know all the endpoints in the project in order to display and test them.
 builder.Services.AddEndpointsApiExplorer();
+
+
 
 // Swagger Configuration
 builder.Services.AddSwaggerGen(options =>
@@ -88,6 +94,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
 // Add Entity Framework Core
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));// Configures the application to use SQL Server with the connection string specified in the configuration (e.g., appsettings.json) under "DefaultConnection". This allows the application to connect to the database and perform CRUD operations on the defined models (TaskItem, Comment, Project, User) through Entity Framework Core.
@@ -125,11 +132,17 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("AngularPolicy");// Enables CORS for the specified policy
+
+// Enable authentication and authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers();// Maps the controller routes to the application, allowing it to handle incoming HTTP requests and route them to the appropriate controller actions.
 
+
+// Apply database migrations on startup
+//This code automatically applies Entity Framework Core migrations when the application starts. 
+//Since the API and SQL Server start together in Docker, it also retries the database connection until SQL Server is ready, preventing startup failures.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

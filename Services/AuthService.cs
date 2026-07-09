@@ -78,7 +78,7 @@ namespace ProjectTaskManagementAPI.Services
             var existingUser = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);//We check if a user with the provided email already exists in the database. If such a user is found, we log a warning and return an error message indicating that the email already exists.
 
-            if (existingUser != null)
+            if (existingUser != null)//If a user with the provided email already exists, we log a warning and return an error message indicating that the email already exists. This prevents duplicate registrations with the same email address.
             {
                 _logger.LogWarning("Email already exists");
 
@@ -89,7 +89,7 @@ namespace ProjectTaskManagementAPI.Services
             {
                 FullName = dto.FullName,
                 Email = dto.Email,
-                PasswordHash = HashPassword(dto.Password),
+                PasswordHash = HashPassword(dto.Password),//We hash the provided password using the HashPassword method before storing it in the database. This ensures that the password is stored securely and cannot be easily retrieved in plain text.
                 Role = dto.Role
             };
 
@@ -125,7 +125,7 @@ namespace ProjectTaskManagementAPI.Services
 
                 return "Invalid Email or Password";
             }
-
+            //If the user is found and the password matches, we log an information message indicating that the login was successful. We then generate a JWT token for the authenticated user using the GenerateJwtToken method and return it.
             _logger.LogInformation("Login successful");
 
             var token = GenerateJwtToken(user);
