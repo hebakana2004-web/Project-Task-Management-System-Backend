@@ -2,12 +2,12 @@
 using ProjectTaskManagementAPI.Interfaces;
 using ProjectTaskManagementAPI.Data;
 using ProjectTaskManagementAPI.Models;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
 
 namespace ProjectTaskManagementAPI.Services
 {
@@ -16,6 +16,8 @@ namespace ProjectTaskManagementAPI.Services
         private readonly AppDbContext _context;//We use it to access the database.
         private readonly ILogger<AuthService> _logger;//We use it to log information, warnings, and errors,We use it to record events.
         private readonly IConfiguration _configuration; //We use it to read values ​​from: appsettings.json
+        private readonly PasswordHasher<User> _passwordHasher = new();//We use it to hash passwords securely.
+
 
         public AuthService(
             AppDbContext context,
@@ -29,17 +31,9 @@ namespace ProjectTaskManagementAPI.Services
         //Constructor Injection
         //When .NET creates: AuthService It automatically sends: AppDbContext ILogger IConfiguration to the Constructor.
 
-        //hash password
-        private string HashPassword(string password)//The HashPassword method takes a plain text password as input and returns a hashed version of it. It uses the SHA256 hashing algorithm to compute the hash of the password and then converts it to a Base64 string for storage.
-        {
-            using var sha256 = SHA256.Create();//We create an instance of the SHA256 hashing algorithm using the Create method. This allows us to compute the hash of the password.
+    
 
-            var bytes = Encoding.UTF8.GetBytes(password);
-
-            var hash = sha256.ComputeHash(bytes);
-
-            return Convert.ToBase64String(hash);
-        }
+        
 
         //generate jwt token method
         private string GenerateJwtToken(User user)
@@ -84,14 +78,18 @@ namespace ProjectTaskManagementAPI.Services
 
                 return "Email already exists";
             }
-
+            //If the email is unique, we create a new User object and populate its properties with the data from the RegisterDto. We then hash the provided password using the PasswordHasher and store the hashed password in the PasswordHash property of the User object. After that, we add the new user to the database context and save the changes asynchronously. Finally, we log an information message indicating that the user was registered successfully and return a success message.
             var user = new User
             {
                 FullName = dto.FullName,
                 Email = dto.Email,
-                PasswordHash = HashPassword(dto.Password),//We hash the provided password using the HashPassword method before storing it in the database. This ensures that the password is stored securely and cannot be easily retrieved in plain text.
                 Role = dto.Role
             };
+
+            //We use the PasswordHasher to hash the provided password securely.
+            //The hashed password is stored in the PasswordHash property of the User object,
+            //ensuring that the actual password is not stored in plain text in the database.
+            user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
 
             _context.Users.Add(user);
 
@@ -101,15 +99,14 @@ namespace ProjectTaskManagementAPI.Services
 
             return "User registered successfully";
         }
-        //The LoginAsync method is responsible for authenticating a user based on the provided email and password. It first checks if a user with the given email exists in the database. If not, it logs a warning and returns an error message. If the user exists, it hashes the provided password and compares it with the stored password hash. If they do not match, it logs a warning and returns an error message. If the login is successful, it logs the information and returns a success message.
-
+        
 
         //login method
-        public async Task<string> LoginAsync(LoginDto dto)//The LoginAsync method is responsible for authenticating a user based on the provided email and password. It first checks if a user with the given email exists in the database. If not, it logs a warning and returns an error message. If the user exists, it hashes the provided password and compares it with the stored password hash. If they do not match, it logs a warning and returns an error message. If the login is successful, it logs the information and returns a success message.
+        public async Task<string> LoginAsync(LoginDto dto)
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);//We query the database to find a user with the provided email. If no user is found, we log a warning and return an error message indicating that the email or password is invalid.
-
+            
             if (user == null)
             {
                 _logger.LogWarning("User not found");
@@ -117,14 +114,22 @@ namespace ProjectTaskManagementAPI.Services
                 return "Invalid Email or Password";
             }
 
-            var hashedPassword = HashPassword(dto.Password);//We hash the provided password using the same hashing method as during registration. This ensures that we are comparing the hashed version of the provided password with the stored password hash.
+            //We use the PasswordHasher to verify the provided password against the stored password hash.
+            //If the verification fails, we log a warning and return an error message indicating that the email or password is invalid.
+            var verificationResult =
+                _passwordHasher.VerifyHashedPassword(
+                    user,
+                    user.PasswordHash,
+                    dto.Password);
 
-            if (user.PasswordHash != hashedPassword) //We compare the hashed version of the provided password with the stored password hash. If they do not match, it means the password is incorrect.
+            if (verificationResult == PasswordVerificationResult.Failed)//If the password verification fails, we log a warning and return an error message indicating that the email or password is invalid.
             {
                 _logger.LogWarning("Invalid password");
 
                 return "Invalid Email or Password";
             }
+
+
             //If the user is found and the password matches, we log an information message indicating that the login was successful. We then generate a JWT token for the authenticated user using the GenerateJwtToken method and return it.
             _logger.LogInformation("Login successful");
 
@@ -134,3 +139,7 @@ namespace ProjectTaskManagementAPI.Services
         }
     }
 }
+
+//The LoginAsync method authenticates the user by verifying
+//the entered password against the stored password hash using
+//ASP.NET Core PasswordHasher.b
